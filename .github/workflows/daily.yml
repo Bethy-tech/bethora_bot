@@ -1,1 +1,31 @@
+name: Bethora daily posts
 
+on:
+  schedule:
+    - cron: "0 4 * * *"
+    - cron: "30 7 * * *"
+    - cron: "0 11 * * *"
+    - cron: "0 15 * * *"
+    - cron: "30 18 * * *"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "morning | tip | build | find | night"
+        required: false
+        default: "tip"
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python post_daily.py "${{ github.event.inputs.slot || github.event.schedule }}"
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OWNER_CHAT_ID: ${{ secrets.OWNER_CHAT_ID }}
+          MODE: ${{ vars.MODE || 'draft' }}
